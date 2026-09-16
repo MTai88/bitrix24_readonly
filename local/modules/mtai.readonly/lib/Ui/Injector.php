@@ -107,6 +107,13 @@ final class Injector
 			return;
 		}
 
+		// права уже сужены на сервере (Bootstrapper) — карточка нативно
+		// рендерится в режиме просмотра, JS-надстройка не нужна
+		if (\MTai\ReadOnly\Bootstrapper::isPermissionsDecoratorActive())
+		{
+			return;
+		}
+
 		$script = $forceParamSupported ? self::reloadWithForceScript() : self::viewModeScript();
 
 		$content = preg_replace(

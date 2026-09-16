@@ -5,6 +5,7 @@ use Bitrix\Main\EventManager;
 use Bitrix\Main\Localization\Loc;
 use Bitrix\Main\ModuleManager;
 use Bitrix\Main\ORM\Entity;
+use MTai\ReadOnly\Bootstrapper;
 use MTai\ReadOnly\Guard\ClassicGuard;
 use MTai\ReadOnly\Guard\DynamicGuard;
 use MTai\ReadOnly\Internals\LockTable;
@@ -112,6 +113,14 @@ class MTai_ReadOnly extends CModule
 
 		$em->registerEventHandlerCompatible(
 			'main',
+			'OnProlog',
+			$this->MODULE_ID,
+			Bootstrapper::class,
+			'onProlog',
+		);
+
+		$em->registerEventHandlerCompatible(
+			'main',
 			'OnEndBufferContent',
 			$this->MODULE_ID,
 			Injector::class,
@@ -132,6 +141,14 @@ class MTai_ReadOnly extends CModule
 		{
 			$em->unRegisterEventHandler('crm', $event, $this->MODULE_ID, ClassicGuard::class, $method);
 		}
+
+		$em->unRegisterEventHandler(
+			'main',
+			'OnProlog',
+			$this->MODULE_ID,
+			Bootstrapper::class,
+			'onProlog',
+		);
 
 		$em->unRegisterEventHandler(
 			'main',
