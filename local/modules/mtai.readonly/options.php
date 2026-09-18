@@ -184,33 +184,35 @@ function mtaiRoRenderRuleRow(int $index, array $row, array $entityTypes, array $
 	return <<<HTML
 	<tr class="mtai-ro-rule">
 		<td style="vertical-align:top;">
-			<input type="text" name="rule[{$index}][title]" value="{$title}" size="16" style="width:130px;">
+			<input type="text" name="rule[{$index}][title]" value="{$title}" size="16" style="width:120px;" placeholder="необязательно">
 		</td>
 		<td style="vertical-align:top;">
-			<select name="rule[{$index}][kind]" class="mtai-ro-kind" style="width:165px;">
+			<select name="rule[{$index}][kind]" class="mtai-ro-kind" style="width:150px;">
 				<option value="fieldEquals"__SEL_FIELD__>__KIND_FIELD__</option>
 				<option value="userGroup"__SEL_GROUP__>__KIND_GROUP__</option>
 			</select>
 		</td>
 		<td style="vertical-align:top;">
-			<select name="rule[{$index}][entityTypeIds][]" multiple size="4" class="mtai-ro-types" style="min-width:150px;">{$typeOptions}</select>
+			<select name="rule[{$index}][entityTypeIds][]" multiple size="4" class="mtai-ro-types" style="min-width:140px;">{$typeOptions}</select>
 		</td>
-		<td style="vertical-align:top;display:{$fieldDisplay};" class="mtai-ro-field-cell">
-			<input type="text" name="rule[{$index}][field]" value="{$field}" list="mtai-ro-fields-{$index}"
-				placeholder="UF_..." class="mtai-ro-field" style="width:170px;">
-			<datalist id="mtai-ro-fields-{$index}" class="mtai-ro-datalist"></datalist>
-		</td>
-		<td style="vertical-align:top;display:{$fieldDisplay};" class="mtai-ro-value-cell">
-			<input type="text" name="rule[{$index}][value]" value="{$value}" class="mtai-ro-value" style="width:80px;">
-		</td>
-		<td style="vertical-align:top;display:{$groupDisplay};" class="mtai-ro-group-cell">
-			<select name="rule[{$index}][groupId]" class="mtai-ro-group" style="width:210px;">{$groupOptions}</select>
+		<td style="vertical-align:top;" class="mtai-ro-params-cell">
+			<div class="mtai-ro-field-params" style="display:{$fieldDisplay};white-space:nowrap;">
+				__FIELD_LABEL__
+				<input type="text" name="rule[{$index}][field]" value="{$field}" list="mtai-ro-fields-{$index}"
+					placeholder="UF_..." class="mtai-ro-field" style="width:140px;">
+				&nbsp;=&nbsp;
+				<input type="text" name="rule[{$index}][value]" value="{$value}" class="mtai-ro-value" style="width:70px;">
+			</div>
+			<div class="mtai-ro-group-params" style="display:{$groupDisplay};white-space:nowrap;">
+				__GROUP_LABEL__
+				<select name="rule[{$index}][groupId]" class="mtai-ro-group" style="width:200px;">{$groupOptions}</select>
+			</div>
 		</td>
 		<td style="vertical-align:top;">
-			<input type="button" value="✕" class="mtai-ro-remove" style="width:30px;" title="__REMOVE_TITLE__">
+			<input type="button" value="__REMOVE_TEXT__" class="adm-btn mtai-ro-remove" title="__REMOVE_TITLE__" style="color:#d0021b;">
 		</td>
 	</tr>
-HTML;
+	HTML;
 }
 
 /** Замена текстовых плейсхолдеров строки правила на локализованные значения. */
@@ -223,6 +225,9 @@ function mtaiRoLocalizeRow(string $html, string $kind): string
 			'__KIND_FIELD__',
 			'__KIND_GROUP__',
 			'__GROUP_PLACEHOLDER__',
+			'__FIELD_LABEL__',
+			'__GROUP_LABEL__',
+			'__REMOVE_TEXT__',
 			'__REMOVE_TITLE__',
 		],
 		[
@@ -231,6 +236,9 @@ function mtaiRoLocalizeRow(string $html, string $kind): string
 			Loc::getMessage('MTAI_RO_KIND_FIELD'),
 			Loc::getMessage('MTAI_RO_KIND_GROUP'),
 			Loc::getMessage('MTAI_RO_RULE_GROUP_PLACEHOLDER'),
+			Loc::getMessage('MTAI_RO_FIELD_LABEL'),
+			Loc::getMessage('MTAI_RO_GROUP_LABEL'),
+			Loc::getMessage('MTAI_RO_RULE_REMOVE_TEXT'),
 			Loc::getMessage('MTAI_RO_RULE_REMOVE'),
 		],
 		$html,
@@ -274,9 +282,7 @@ $tabControl->Begin();
 					<td><?= Loc::getMessage('MTAI_RO_RULE_TITLE') ?></td>
 					<td><?= Loc::getMessage('MTAI_RO_RULE_KIND') ?></td>
 					<td><?= Loc::getMessage('MTAI_RO_RULE_ENTITIES') ?></td>
-					<td><?= Loc::getMessage('MTAI_RO_RULE_FIELD') ?></td>
-					<td><?= Loc::getMessage('MTAI_RO_RULE_VALUE') ?></td>
-					<td><?= Loc::getMessage('MTAI_RO_RULE_GROUP') ?></td>
+					<td><?= Loc::getMessage('MTAI_RO_RULE_PARAMS') ?></td>
 					<td></td>
 				</tr>
 				</thead>
@@ -347,9 +353,8 @@ $tabControl->Begin();
 
 		function syncKind() {
 			var isField = kindSelect.value === 'fieldEquals';
-			row.querySelector('.mtai-ro-field-cell').style.display = isField ? '' : 'none';
-			row.querySelector('.mtai-ro-value-cell').style.display = isField ? '' : 'none';
-			row.querySelector('.mtai-ro-group-cell').style.display = isField ? 'none' : '';
+			row.querySelector('.mtai-ro-field-params').style.display = isField ? '' : 'none';
+			row.querySelector('.mtai-ro-group-params').style.display = isField ? 'none' : '';
 		}
 
 		BX.bind(kindSelect, 'change', syncKind);
