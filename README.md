@@ -83,8 +83,7 @@ Manager::getInstance()->withBypass(fn() => $deal->Update(11, $fields));
 ## Установка
 
 1. Скопировать `local/modules/mtai.readonly/` в `local/modules/` портала.
-2. Установить модуль в `Настройки → Модули` (или через API — см.
-   `scripts/seed_readonly_demo.php` на тестовом стенде).
+2. Установить модуль в `Настройки → Модули`.
 
 Модуль при установке:
 - создаёт таблицу `mtai_readonly_lock`;
@@ -214,21 +213,3 @@ new \MTai\ReadOnly\Rule\UserGroupRule(9); // участникам группы �
   персистентных блокировок.
 - `local/modules/mtai.readonly/options.php` — страница настроек.
 - `local/modules/mtai.readonly/install/` — установщик.
-
-## Демо на тестовом стенде
-
-На стенде `bitrix24_test` (см. корневой README стенда):
-
-```bash
-# установка модуля + UF-поле UF_CRM_RO_DEMO + демо-значения + правило
-docker exec bitrix-php-1 php /var/www/html/local/tools/seed_readonly_demo.php
-
-# прогон всех проверок (22 теста)
-docker exec bitrix-php-1 php /var/www/html/local/tools/test_readonly_demo.php
-```
-
-Демо-элементы с `UF_CRM_RO_DEMO = Y`: сделка `/crm/deal/details/11/`,
-контакт `/crm/contact/details/8/`, компания `/crm/company/details/1/`,
-элемент смарт-процесса `/crm/type/1038/details/1/`. Под `test.user`
-карточки открываются в режиме чтения и сохранение отклоняется; под
-`admin` — штатное поведение.
