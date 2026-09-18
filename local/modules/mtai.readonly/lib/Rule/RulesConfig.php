@@ -55,6 +55,75 @@ final class RulesConfig
 	}
 
 	/**
+	 * Нормализация правил из формы настроек ($_POST['rule']):
+	 * возвращает массив готовый к json_encode и Option::set('rules').
+	 *
+	 * @param array<int, mixed> $rows
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	public static function normalizeFromPost(array $rows): array
+	{
+		$result = [];
+		foreach ($rows as $row)
+		{
+			if (!is_array($row))
+			{
+				continue;
+			}
+
+			$kind = (string)($row['kind'] ?? '');
+			if (!in_array($kind, ['fieldEquals', 'userGroup'], true))
+			{
+				continue;
+			}
+
+			$rule = ['kind' => $kind];
+
+			$entityTypeIds = array_values(array_filter(
+				array_map('intval', is_array($row['entityTypeIds'] ?? null) ? $row['entityTypeIds'] : []),
+				static fn (int $id) => $id > 0,
+			));
+			if ($entityTypeIds !== [])
+			{
+				$rule['entityTypeIds'] = $entityTypeIds;
+			}
+
+			$title = trim((string)($row['title'] ?? ''));
+			if ($title !== '')
+			{
+				$rule['title'] = $title;
+			}
+
+			if ($kind === 'fieldEquals')
+			{
+				$field = trim((string)($row['field'] ?? ''));
+				if ($field === '')
+				{
+					continue;
+				}
+
+				$rule['field'] = $field;
+				$rule['value'] = (string)($row['value'] ?? '');
+			}
+			else
+			{
+				$groupId = (int)($row['groupId'] ?? 0);
+				if ($groupId <= 0)
+				{
+					continue;
+				}
+
+				$rule['groupId'] = $groupId;
+			}
+
+			$result[] = $rule;
+		}
+
+		return $result;
+	}
+
+	/**
 	 * @param array<int, mixed> $list
 	 *
 	 * @return list<array{rule: Rule, entityTypeIds: array<int, int>|null, title: string}>
