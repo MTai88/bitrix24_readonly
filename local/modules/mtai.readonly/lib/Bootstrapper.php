@@ -28,8 +28,8 @@ use Throwable;
  */
 final class Bootstrapper
 {
-	/** URL, на которых имеет смысл подменять права (CRM-страницы, AJAX-контроллеры CRM, REST) */
-	private const URI_GATE_REGEX = '~/(crm|rest)/|ajax\.php~';
+	/** URL, на которых имеет смысл подключать декоратор прав (страницы и AJAX CRM) */
+	private const URI_GATE_REGEX = '~/crm|ajax\.php~';
 
 	public static function onProlog(): void
 	{

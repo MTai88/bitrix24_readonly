@@ -112,6 +112,7 @@ if (
 	{
 		Option::set($module_id, 'enabled', isset($_POST['enabled']) ? 'Y' : 'N');
 		Option::set($module_id, 'apply_to_admins', isset($_POST['apply_to_admins']) ? 'Y' : 'N');
+		Option::set($module_id, 'block_api', isset($_POST['block_api']) ? 'Y' : 'N');
 
 		$rules = RulesConfig::normalizeFromPost(is_array($_POST['rule'] ?? null) ? $_POST['rule'] : []);
 		Option::set($module_id, 'rules', $rules !== [] ? json_encode($rules, JSON_UNESCAPED_UNICODE) : '');
@@ -253,6 +254,13 @@ $tabControl->Begin();
 		<td width="60%">
 			<input type="checkbox" name="apply_to_admins" value="Y" <?= Option::get($module_id, 'apply_to_admins', 'N') === 'Y' ? 'checked' : '' ?>>
 			<div style="margin-top:6px;color:#666;"><?= Loc::getMessage('MTAI_RO_OPTIONS_ADMINS_HINT') ?></div>
+		</td>
+	</tr>
+	<tr>
+		<td width="40%"><?= Loc::getMessage('MTAI_RO_OPTIONS_BLOCK_API') ?></td>
+		<td width="60%">
+			<input type="checkbox" name="block_api" value="Y" <?= Option::get($module_id, 'block_api', 'N') === 'Y' ? 'checked' : '' ?>>
+			<div style="margin-top:6px;color:#666;"><?= Loc::getMessage('MTAI_RO_OPTIONS_BLOCK_API_HINT') ?></div>
 		</td>
 	</tr>
 	<tr>

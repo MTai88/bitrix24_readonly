@@ -211,6 +211,11 @@ final class Manager
 	/**
 	 * Элемент в режиме только чтение для пользователя $userId
 	 * (по умолчанию — для текущего)?
+	 *
+	 * По умолчанию режим действует только в канале UI (веб-интерфейс);
+	 * программные обновления (CLI, агенты, REST, вебхуки) не блокируются.
+	 * Опция block_api = Y включает строгий режим «для всех каналов»,
+	 * setBypass()/withBypass() отключает механизм для участка кода.
 	 */
 	public function isReadOnly(int $entityTypeId, int $entityId, ?int $userId = null): bool
 	{
@@ -224,7 +229,7 @@ final class Manager
 
 		$decision = false;
 
-		if ($this->isEnabled() && $this->appliesToUser($userId))
+		if ($this->isEnabled() && $this->appliesToChannel() && $this->appliesToUser($userId))
 		{
 			$context = new Context(
 				$entityTypeId,
@@ -243,6 +248,53 @@ final class Manager
 	public function isReadOnlyForCurrentUser(int $entityTypeId, int $entityId): bool
 	{
 		return $this->isReadOnly($entityTypeId, $entityId, self::currentUserId());
+	}
+
+	/* =====================================================================
+	 *  Программный обход блокировки
+	 * ==================================================================== */
+
+	private ?bool $bypass = null;
+
+	/**
+	 * Временно отключить механизм для текущего запроса (или вернуть как было).
+	 * Удобнее использовать withBypass().
+	 */
+	public function setBypass(bool $bypass): void
+	{
+		$this->bypass = $bypass;
+		$this->decisionCache = [];
+	}
+
+	public function isBypassed(): bool
+	{
+		return $this->bypass === true;
+	}
+
+	/**
+	 * Выполнить код без блокировки чтения-режима (для интеграций и миграций):
+	 *   Manager::getInstance()->withBypass(fn() => $deal->Update(...));
+	 */
+	public function withBypass(callable $callback): mixed
+	{
+		$previous = $this->bypass;
+		$this->setBypass(true);
+		try
+		{
+			return $callback();
+		}
+		finally
+		{
+			$this->setBypass($previous === true);
+		}
+	}
+
+	/**
+	 * Сброс кэша решений (например, после Channel::force() в тестах).
+	 */
+	public function resetDecisionCache(): void
+	{
+		$this->decisionCache = [];
 	}
 
 	/* =====================================================================
@@ -353,6 +405,25 @@ final class Manager
 	private function isEnabled(): bool
 	{
 		return Option::get(self::MODULE_ID, 'enabled', 'Y') !== 'N';
+	}
+
+	/**
+	 * Действует ли механизм в текущем канале запроса.
+	 * block_api=Y — строгий режим (везде), иначе — только веб-интерфейс.
+	 */
+	private function appliesToChannel(): bool
+	{
+		if ($this->isBypassed())
+		{
+			return false;
+		}
+
+		if (Option::get(self::MODULE_ID, 'block_api', 'N') === 'Y')
+		{
+			return true;
+		}
+
+		return !Channel::isCode();
 	}
 
 	private function appliesToUser(int $userId): bool
